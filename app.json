@@ -1,0 +1,14 @@
+{
+  "expo": {
+    "name": "localiaUnifap",
+    "icon": "./assets/icon.png",
+    "version": "1.0.0",
+    "slug": "find",
+    "ios": {
+      "bundleIdentifier": "com.unifap.localizaunifap"
+    },
+    "android": {
+      "package": "com.unifap.localizaunifap"
+    }
+  }
+}

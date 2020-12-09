@@ -12,7 +12,7 @@ import {
   Keyboard,
   TouchableWithoutFeedback,
   TouchableHighlight,
-  Image
+  Image, Modal
 } from "react-native";
 import { Container, Header, Left, Right, Radio } from "native-base";
 import MapView, {
@@ -27,6 +27,8 @@ import * as Animatable from "react-native-animatable";
 import MapViewDirections from "react-native-maps-directions";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import axios from "axios";
+import * as Location from 'expo-location';
+import Loader from '../src/Loader';
 const { width, height } = Dimensions.get("window");
 const DismissKeyboard = ({ children }) => (
   <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
@@ -65,7 +67,12 @@ class Mapa extends React.Component {
       },
       nome: "",
       route: [],
-      data: []
+      data: [],
+      todosOsLugares:[{id:2,nome:'Reitoria',latitude:-0.00667,longitude:-51.08379}],
+      informationScreen:false,
+      sendingInformation:[],
+      loading:false,
+      markerApears:false
     };
   }
 
@@ -81,6 +88,7 @@ class Mapa extends React.Component {
     searchBarFocused: false;
   }
   componentDidMount() {
+    this.getData()
     var aux = [];
     this.keyboardDidShow = Keyboard.addListener(
       "keyboardDidShow",
@@ -98,21 +106,8 @@ class Mapa extends React.Component {
       "keyboardDidHide",
       this.keyboardDidHide
     );
-    /*  axios
-      .get(
-        "https://api.openrouteservice.org/v2/directions/foot-walking?api_key=5b3ce3597851110001cf62487c30f797a66349f3a54de3af28c85215&start=-51.082908,-0.006254&end=-51.085605,-0.006954"
-      )
-      .then(res => {
-        //console.log("res.data");
-        //console.log(res.data.features[0].geometry.coordinates);
-        this.setState({ route: res.data.features[0].geometry.coordinates });
-
-        //this.setState({route: res.data})
-      })
-      .catch(function(error) {
-        console.log("res");
-        console.log(error);
-      }); */
+   
+     
   }
   //pegaRotas(){
   //this.state.route.map((coordinates, index)=>{
@@ -124,15 +119,67 @@ class Mapa extends React.Component {
   //})
   //}
 
-  renderRoute(latitude, longitude, i) {
-    return (
+  getCurrentLocation = async (latitudeBuilding,longitudeBuilding)=>{
+    
+    let { status } = await Location.requestPermissionsAsync();
+    if (status !== 'granted') {
+      setErrorMsg('Permission to access location was denied');
+    }
+    let location = await Location.getCurrentPositionAsync({});
+    console.log(location,'jjjjjjjjjjjjjjjjjjj')
+    this.getRoute(location.coords.latitude,location.coords.longitude,latitudeBuilding, longitudeBuilding);
+    
+  }
+
+  getRoute = async(latitudeUser, longitudeUser, latitudeBuilding, longitudeBuilding)=>{
+    console.log('apssoooooooou aqui')
+    let array  = [];
+    this.setState({loading:true})
+    console.log('asatralllllllllllll')
+    try{
+      const response = await axios
+      .get(
+        `https://api.openrouteservice.org/v2/directions/foot-walking?api_key=5b3ce3597851110001cf62487c30f797a66349f3a54de3af28c85215&start=${longitudeUser},${latitudeUser}&end=${longitudeBuilding},${latitudeBuilding}`
+      )
+      console.log(response.data.features[0].geometry.coordinates,'hhhhhhhhhhh')
+for(let i = 0; i<response.data.features[0].geometry.coordinates.length;i++){
+  array[i]= response.data.features[0].geometry.coordinates[i];
+}
+this.setState({loading:false})
+this.setState({ route: array });
+console.log(array,'hhhhhhhhhhh')
+     /*  this.setState({ route: response.data.features[0].geometry.coordinates },()=>{
+        
+      }); */
+     
+        
+    }catch(error){
+      console.log("res");
+      console.log(error);
+    }
+     
+     /*  .then(res => {
+        //console.log("res.data");
+        //console.log(res.data.features[0].geometry.coordinates);
+       
+        
+        //this.setState({route: res.data})
+      })
+      .catch(function(error) {
+        
+      }); */
+  }
+
+  renderRoute = (latitude, longitude, i)=> {
+    console.log('slllllllllllllllllllllllllllllll')
+    /* return (
       <MapView.Polyline
         key={i}
         coordinates={(latitude, longitude)}
         strokeColor={"#000"}
         strokeWidth={4}
       />
-    );
+    ); */
   }
   /* 
   keyboardDidShow = () => {
@@ -163,9 +210,42 @@ class Mapa extends React.Component {
     this.setState({ data: [] });
   };
 
+  getData = async () => {
+    try{
+
+      const response = await axios.get('https://localiza-unifap.herokuapp.com/edificios')
+      if(response.data === null){
+  alert('Aviso', 'Nada Encontrado, reinicie o app!!')
+      }else{
+        this.setState({todosOsLugares: response.data})
+      }
+    }catch(error){
+      console.log(error)
+      alert('Aviso!!', "Não foi possivel conectar a internet, tenta novamento mais tarde!!")
+    }
+
+  }
+
   search = async () => {
-    let a = [{ nome: "Sem Resultados!!" }];
-    if (this.state.nome === "") {
+    
+   /*  let a = [{ nome: "Sem Resultados!!" }]; */
+   
+    const filter = this.state.todosOsLugares?.filter((value) => {
+      return String(value.nome)
+        .toUpperCase()
+        .includes(String(this.state.nome).toUpperCase());
+    });
+
+    if (filter?.length === 0) {
+      this.setState({data: null})
+      this.setState({data: [{ nome: "Sem Resultados!!" }]})
+      /* this.setState({data: filter}) */
+    } else {
+      
+      this.setState({data: filter})
+    }
+    
+   /*  if (this.state.nome === "") {
       console.log("entroi");
       this.setState({ data: [] });
     } else if (this.state.nome !== "") {
@@ -182,9 +262,9 @@ class Mapa extends React.Component {
         this.setState({ data: a });
       } else {
         this.setState({ data: response.data });
-        /* console.log(response.data); */
+        console.log(response.data);
       }
-    }
+    } */
   };
   trataDetalhes = i => {
     console.log(i);
@@ -194,12 +274,39 @@ class Mapa extends React.Component {
       ? MAP_TYPES.STANDARD
       : MAP_TYPES.NONE;
   }
+  telaInformacaoAppears = (rowData) =>{
+    if(!this.state.markerApears){
+      this.setState({markerApears:true});
+    }
+    console.log('testeeeeeeeee')
+    if(!this.state.informationScreen){
+      this.setState({ show1: false });
+      this.setState({ show: false,informationScreen:true,sendingInformation:rowData });
+    }else{
+      /* this.setState({ show1: true }); */
+      this.setState({ informationScreen:false/* ,sendingInformation:rowData */ });
+    }
+    
+    
+    
+    
+  }
+
+  closeInformation =  ()=>{
+    this.setState({ show1: true,informationScreen:false });
+    
+  }
+  
   render() {
     const { navigate } = this.props.navigation;
     return (
       <DismissKeyboard>
+       
         <View>
-          <MapView
+        <Loader loading={this.state.loading} /> 
+           <View>
+           
+           <MapView
             initialRegion={this.state.region}
             provider={null}
             rotateEnabled={false}
@@ -224,16 +331,19 @@ class Mapa extends React.Component {
             })}
 
             {/* {console.log(coordinate)} */}
-            <MapView.Marker
-              coordinate={{ latitude: -0.0070825, longitude: -51.0845708 }}
-              onCalloutPress={() => navigate("ScreenTwo")}
+            {this.state.markerApears? (
+              <MapView.Marker
+              coordinate={ {latitude:parseFloat(this.state.sendingInformation.latitude), longitude:parseFloat(this.state.sendingInformation.longitude)} }
+              onCalloutPress={() => this.telaInformacaoAppears(this.state.sendingInformation)}
             >
               <MapView.Callout>
                 <View>
-                  <Text>teste</Text>
+                <Text style={{fontSize:16, paddingHorizontal:5}}>{this.state.sendingInformation.nome}</Text>
                 </View>
               </MapView.Callout>
             </MapView.Marker>
+            ):null}
+            
           </MapView>
           {/* 
           <View
@@ -330,14 +440,14 @@ class Mapa extends React.Component {
                 <KeyboardAwareScrollView enableOnAndroid={true}>
                   <FlatList
                     data={this.state.data}
-                    renderItem={({ item: rowData }) => {
+                    renderItem={({ item: rowData,index }) => {
                       return (
                         <View style={{ flexDirection: "row" }}>
                           <TouchableOpacity
                             onPress={() =>
-                              this.props.navigation.navigate("ScreenTwo", {
-                                rowData
-                              })
+                          /*  this.getCurrentLocation(rowData.latitude, rowData.longitude) */
+                          this.telaInformacaoAppears(rowData)
+                        
                             }
                             /* onPress={() => this.trataDetalhes(rowData)} */
                             style={{
@@ -374,13 +484,43 @@ class Mapa extends React.Component {
                         </View>
                       );
                     }}
-                    keyExtractor={(item, index) => item}
+                    keyExtractor={(item, index) => item.id}
                   />
                 </KeyboardAwareScrollView>
               </View>
             </Animatable.View>
           ) : null}
           {/* </View> */}
+          {this.state.informationScreen?(
+<View style={{position:"absolute",backgroundColor:'#FFF',bottom:0}}>
+  <View style={{flexDirection:'row'}}>
+    <View style={{width:'50%'}}>
+      <Image style={{ width: "100%", height: 150 }}
+              source={require("../backend/uploads/restauranteUniversitario.jpg")} />
+      </View>
+      <View style={{width:'50%'}}>
+        <View style={{height:'10%',alignSelf:'flex-end',paddingRight:5}}>
+<TouchableOpacity onPress={()=>this.closeInformation()}>
+<Icon name='close' size={22} color={'#6A737C'}/>
+</TouchableOpacity>
+        </View>
+        <View style={{height:'10%'}}>
+        <Text style={{fontSize:22, paddingHorizontal:5}}>{this.state.sendingInformation.nome}</Text>
+        </View>
+        <View style={{height:'80%',alignSelf:"center",justifyContent:"center"}}>
+        <TouchableOpacity onPress={()=> this.getCurrentLocation(this.state.sendingInformation.latitude,this.state.sendingInformation.longitude)}>
+            <Icon style={{alignSelf:"center"}} name='location-arrow' size={25}  color= "#4d6273"/>
+            <Text>Gerar rota</Text>
+          </TouchableOpacity>
+          </View>
+          
+          
+      </View>
+  </View>
+  </View>
+          ):null}
+           </View>
+          
         </View>
       </DismissKeyboard>
     );

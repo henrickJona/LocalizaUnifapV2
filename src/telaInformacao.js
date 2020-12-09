@@ -37,13 +37,17 @@ class TelaInformacao extends React.Component {
     csenha: "",
     data: []
   };
-  componentDidMount() {
-    this.setState({ data: this.props.navigation.state.params.rowData }, () =>
+/*   componentDidMount() {
+    console.log('slalllllllllll')
+    console.log(this.props.navigation.state.params.dataas,'fffffffffffffffffff')
+    this.setState({ data: this.props.navigation.state.params.dataas }, () =>
       console.log("tela", this.state.data)
     );
-  }
+  } */
 
   render() {
+    const { params } = this.props.navigation.state;
+    const datas= params ? params.dataas: null;
     return (
       <KeyboardAwareScrollView
         style={estilo.scroll}
@@ -70,7 +74,7 @@ class TelaInformacao extends React.Component {
             }}
           >
             <Text h1 bold style={estilo.titulo}>
-              {this.state.data.nome}
+              {datas.nome}
             </Text>
           </View>
           <View
@@ -106,7 +110,7 @@ class TelaInformacao extends React.Component {
                 paddingLeft: 30
               }}
             >
-              {this.state.data.descricao}
+              {datas.descricao}
             </Text>
           </View>
           <View
@@ -169,7 +173,7 @@ class TelaInformacao extends React.Component {
               style={{ alignItems: "center", paddingTop: 20 }}
             >
               <Icon name="arrow-circle-o-right" size={40} color="#4d6273" />
-              <Text style={{ color: "#4d6273" }}>Rotas</Text>
+              <Text style={{ color: "#4d6273" }}>Gerar rota</Text>
             </TouchableOpacity>
           </View>
         </View>

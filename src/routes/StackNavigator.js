@@ -3,7 +3,7 @@
 import { createStackNavigator } from '@react-navigation/stack';
 import React, { Component } from 'react';
 import BottomNavigation from './BottomNavigation';
-
+import telaInformacao from '../telaInformacao'
 const Stack = createStackNavigator();
 
 function StackNavigator() {
@@ -13,9 +13,9 @@ function StackNavigator() {
     <>
       <Stack.Navigator
       
-        screenOptions={{
+       /*  screenOptions={{
             headerShown:false
-         /*  headerBackTitleVisible: false,
+          headerBackTitleVisible: false,
           headerTintColor: '#ECEBDF',
           headerTitleAlign: 'left',
         
@@ -34,13 +34,22 @@ function StackNavigator() {
             elevation: 3,
             shadowOpacity: 0.22,
             shadowRadius: 2.22,
-          }, */
-        }}
+          },
+        }} */
       >
         <Stack.Screen
+  options={{headerShown:false}}
+
           name="Index"
-          
+          screenOptions={{
+            headerShown:false
+          }}
           component={BottomNavigation}
+        />
+        <Stack.Screen
+          name="informacao"
+          options={{headerShown:true}}
+          component={telaInformacao}
         />
         
       </Stack.Navigator>

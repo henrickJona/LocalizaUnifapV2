@@ -4,16 +4,25 @@ import mapa from '../mapa'
 import Perfil from '../Perfil';
 import Evento from '../Evento';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import Text from 'react-native';
 const Tab = createBottomTabNavigator();
 
 function BottomNavigation() {
   return (
-    <Tab.Navigator>
+    <Tab.Navigator tabBarOptions={{
+      inactiveTintColor: '#444950',
+      activeTintColor: '#597291',
+      labelStyle: {
+        fontSize: 12,
+      },
+    
+    }}>
       <Tab.Screen name="Inicio" component={mapa} options={{
-          tabBarLabel: 'Inicio',
+         tabBarLabel: 'Inicio',
           tabBarIcon: ({ color }) => (
             <Icon size={22} color={color} name="home" />
           ),
+          
         }} />
       <Tab.Screen name="Eventos" component={Evento} options={{
           tabBarLabel: 'Eventos',

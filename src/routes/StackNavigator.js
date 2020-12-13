@@ -47,8 +47,9 @@ function StackNavigator() {
           component={BottomNavigation}
         />
         <Stack.Screen
-          name="informacao"
-          options={{headerShown:true}}
+          name="Detalhes"
+          options={{headerTintColor: '#ECEBDF',headerShown:true,headerStyle:{backgroundColor: '#768899'}}}
+          
           component={telaInformacao}
         />
         

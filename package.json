@@ -11,12 +11,14 @@
   "dependencies": {
     "@expo/vector-icons": "^10.0.0",
     "@react-native-community/masked-view": "^0.1.10",
+    "@react-native-community/picker": "^1.8.1",
     "@react-navigation/bottom-tabs": "^5.11.2",
     "@react-navigation/native": "^5.8.10",
     "@react-navigation/stack": "^5.12.8",
     "axios": "^0.19.2",
     "expo": "^39.0.0",
     "expo-linear-gradient": "~8.3.0",
+    "expo-location": "~9.0.0",
     "json-server": "^0.15.1",
     "multer": "^1.4.2",
     "native-base": "^2.13.8",
@@ -47,8 +49,7 @@
     "react-navigation-drawer": "^2.2.1",
     "react-navigation-stack": "^1.10.3",
     "sequelize": "^5.21.5",
-    "sequelize-cli": "^5.5.1",
-    "expo-location": "~9.0.0"
+    "sequelize-cli": "^5.5.1"
   },
   "devDependencies": {
     "babel-preset-expo": "^8.3.0"

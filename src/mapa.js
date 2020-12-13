@@ -12,7 +12,7 @@ import {
   Keyboard,
   TouchableWithoutFeedback,
   TouchableHighlight,
-  Image, Modal
+  Image, Modal,Pic
 } from "react-native";
 import { Container, Header, Left, Right, Radio } from "native-base";
 import MapView, {
@@ -22,13 +22,15 @@ import MapView, {
   Marker,
   Polyline
 } from "react-native-maps";
-import Icon from "react-native-vector-icons/FontAwesome";
+/* import Icon from "react-native-vector-icons/FontAwesome"; */
+import Icon from "react-native-vector-icons/FontAwesome5";
 import * as Animatable from "react-native-animatable";
 import MapViewDirections from "react-native-maps-directions";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import axios from "axios";
 import * as Location from 'expo-location';
 import Loader from '../src/Loader';
+import {Piker} from '@react-native-community/picker'; 
 const { width, height } = Dimensions.get("window");
 const DismissKeyboard = ({ children }) => (
   <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
@@ -42,7 +44,7 @@ const LATITUDE_DELTA = 0.018;
 const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
 const GOOGLEMAPSAPIKEY =
   "5b3ce3597851110001cf62487c30f797a66349f3a54de3af28c85215";
-var coordinate = [];
+/* var coordinate = []; */
 class Mapa extends React.Component {
   static navigationOptions = {
     title: "mapa",
@@ -72,7 +74,9 @@ class Mapa extends React.Component {
       informationScreen:false,
       sendingInformation:[],
       loading:false,
-      markerApears:false
+      markerApears:false,
+      coordinates:[],
+      foot:false
     };
   }
 
@@ -121,6 +125,7 @@ class Mapa extends React.Component {
 
   getCurrentLocation = async (latitudeBuilding,longitudeBuilding)=>{
     
+    this.setState({loading:true})
     let { status } = await Location.requestPermissionsAsync();
     if (status !== 'granted') {
       setErrorMsg('Permission to access location was denied');
@@ -134,19 +139,46 @@ class Mapa extends React.Component {
   getRoute = async(latitudeUser, longitudeUser, latitudeBuilding, longitudeBuilding)=>{
     console.log('apssoooooooou aqui')
     let array  = [];
-    this.setState({loading:true})
+    let obj = {};
     console.log('asatralllllllllllll')
     try{
       const response = await axios
       .get(
-        `https://api.openrouteservice.org/v2/directions/foot-walking?api_key=5b3ce3597851110001cf62487c30f797a66349f3a54de3af28c85215&start=${longitudeUser},${latitudeUser}&end=${longitudeBuilding},${latitudeBuilding}`
+        `https://api.openrouteservice.org/v2/directions/${this.state.foot?'driving-car':'foot-walking'}?api_key=5b3ce3597851110001cf62487c30f797a66349f3a54de3af28c85215&start=${longitudeUser},${latitudeUser}&end=${longitudeBuilding},${latitudeBuilding}`
       )
       console.log(response.data.features[0].geometry.coordinates,'hhhhhhhhhhh')
 for(let i = 0; i<response.data.features[0].geometry.coordinates.length;i++){
-  array[i]= response.data.features[0].geometry.coordinates[i];
+  obj = {
+    latitude: response.data.features[0].geometry.coordinates[i][1],
+    longitude: response.data.features[0].geometry.coordinates[i][0]
+  }
+  array[i]= obj;
 }
 this.setState({loading:false})
-this.setState({ route: array });
+this.setState({ route: array }/* ,()=>{
+  let coordinate=[]
+  for(let i = 0 ;i< this.state.route.length;i++){
+    const latitude = this.state.route[i][1];
+    const longitude = this.state.route[i][0];
+    coordinate.push({ latitude: latitude, longitude: longitude });
+    
+  }
+  this.setState({coordinates:coordinate})
+  for(let i = 0 ;i< this.state.route.length;i++){
+    return (
+      <Polyline
+        key={i}
+        coordinates={this.state.coordinates}
+        strokeColor={"red"}
+        strokeWidth={4}
+      />
+    );
+  }
+
+
+  
+         
+} */);
 console.log(array,'hhhhhhhhhhh')
      /*  this.setState({ route: response.data.features[0].geometry.coordinates },()=>{
         
@@ -227,7 +259,7 @@ console.log(array,'hhhhhhhhhhh')
   }
 
   search = async () => {
-    
+    this.setState({route:[]})
    /*  let a = [{ nome: "Sem Resultados!!" }]; */
    
     const filter = this.state.todosOsLugares?.filter((value) => {
@@ -275,6 +307,7 @@ console.log(array,'hhhhhhhhhhh')
       : MAP_TYPES.NONE;
   }
   telaInformacaoAppears = (rowData) =>{
+    this.setState({route:[]})
     if(!this.state.markerApears){
       this.setState({markerApears:true});
     }
@@ -296,6 +329,18 @@ console.log(array,'hhhhhhhhhhh')
     this.setState({ show1: true,informationScreen:false });
     
   }
+
+  footCar = () =>{
+ if(this.state.route.length >0 ){
+  this.getCurrentLocation(this.state.sendingInformation.latitude,this.state.sendingInformation.longitude)
+ }
+    if(this.state.foot){
+      this.setState({foot:false})
+    }else{
+      this.setState({foot:true})
+    }
+    
+  }
   
   render() {
     const { navigate } = this.props.navigation;
@@ -304,7 +349,7 @@ console.log(array,'hhhhhhhhhhh')
        
         <View>
         <Loader loading={this.state.loading} /> 
-           <View>
+           
            
            <MapView
             initialRegion={this.state.region}
@@ -312,25 +357,33 @@ console.log(array,'hhhhhhhhhhh')
             rotateEnabled={false}
             style={styles.map}
             showsUserLocation={true}
+            showsMyLocationButton={false}
+            
           >
-            {this.state.route.map((geometry, index) => {
+            
+            {this.state.route.map((geometry, index) => { 
+              /* let coordinate=[]
               const latitude = geometry[1];
               const longitude = geometry[0];
               coordinate.push({ latitude: latitude, longitude: longitude });
+              console.log(coordinate,'salvvvvvvvvvvvvvv')
+              
+                this.setState({coordinates:coordinate}) */
+              
 
               //console.log(typeof coordinate);
               //console.log( coordinate);
               return (
                 <Polyline
                   key={index}
-                  coordinates={coordinate}
-                  strokeColor={"red"}
+                  coordinates={this.state.route}
+                  strokeColor={"#004080"}
                   strokeWidth={4}
                 />
               );
-            })}
-
-            {/* {console.log(coordinate)} */}
+            })
+            }
+          
             {this.state.markerApears? (
               <MapView.Marker
               coordinate={ {latitude:parseFloat(this.state.sendingInformation.latitude), longitude:parseFloat(this.state.sendingInformation.longitude)} }
@@ -343,23 +396,10 @@ console.log(array,'hhhhhhhhhhh')
               </MapView.Callout>
             </MapView.Marker>
             ):null}
+           
+            
             
           </MapView>
-          {/* 
-          <View
-            style={{
-              paddingTop: 50,
-              paddingLeft: 20,
-              paddingBottom: 20,
-
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "center",
-              backgroundColor: "rgba(0,0,0,0.0)",
-              position: "absolute",
-              width: "100%"
-            }}
-          > */}
           {this.state.show1 ? (
             <View
               style={{
@@ -389,8 +429,73 @@ console.log(array,'hhhhhhhhhhh')
                 color="#4d6273"
                 style={{ justifyContent: "flex-end" }}
               />
+           
+              {/* <View> */}
+              
+            
             </View>
+
+          
+              
+           /*  </View> */
           ) : null}
+
+          {!this.state.show?(
+            <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              backgroundColor: "rgba(52, 52, 52, 0.8)",
+             
+              /*   height: "100%", */
+              paddingTop: 50,
+              paddingLeft: 20,
+              paddingBottom: 20,
+              paddingRight: 20,
+              flexDirection: "row",
+              justifyContent: "space-between",
+
+              backgroundColor: "rgba(0,0,0,0.0)",
+              position: "absolute",
+              right:0
+            }}
+          >
+            
+
+            <TouchableOpacity onPress={()=> this.footCar()} style={{backgroundColor:"#FFF",padding:5, borderColor:'#DEDEDE',borderWidth:1,justifyContent:"center",alignContent:"center", elevation:5,borderRadius:24,width:50,height:50}}>
+                
+
+                
+
+                
+                {!this.state.foot?(
+               
+<Icon
+
+name="walking"
+size={22}
+color="#4d6273"
+style={{ alignSelf: "center" }}
+/> 
+              
+                
+                ):( 
+               
+                  <Icon
+                  
+                  name="car"
+                  size={22}
+                  color="#4d6273"
+                  style={{ alignSelf: "center" }}
+                  />
+                  )}
+            
+              
+                </TouchableOpacity>
+            
+          
+          </View>
+          ):null}
 
           {this.state.show ? (
             <Animatable.View
@@ -437,7 +542,7 @@ console.log(array,'hhhhhhhhhhh')
                     this.setState({ nome: nome }, () => this.search())
                   }
                 />
-                <KeyboardAwareScrollView enableOnAndroid={true}>
+               {/*  <KeyboardAwareScrollView enableOnAndroid={true}> */}
                   <FlatList
                     data={this.state.data}
                     renderItem={({ item: rowData,index }) => {
@@ -484,43 +589,59 @@ console.log(array,'hhhhhhhhhhh')
                         </View>
                       );
                     }}
-                    keyExtractor={(item, index) => item.id}
+                    keyExtractor={(item, index) => String( item.id)}
                   />
-                </KeyboardAwareScrollView>
+                {/* </KeyboardAwareScrollView> */}
               </View>
             </Animatable.View>
           ) : null}
           {/* </View> */}
           {this.state.informationScreen?(
-<View style={{position:"absolute",backgroundColor:'#FFF',bottom:0}}>
-  <View style={{flexDirection:'row'}}>
+           
+             
+            <View style={{position:"absolute",backgroundColor:'#FFF',bottom:0,borderTopWidth:1,borderTopColor:'#DEDEDE'}}>
+<View style={{flexDirection:'row'}}>
+  <View style={{width:'50%'}}>
+    <Image style={{ width: "100%", height: 150 }}
+            source={require("../backend/uploads/restauranteUniversitario.jpg")} />
+    </View>
     <View style={{width:'50%'}}>
-      <Image style={{ width: "100%", height: 150 }}
-              source={require("../backend/uploads/restauranteUniversitario.jpg")} />
-      </View>
-      <View style={{width:'50%'}}>
-        <View style={{height:'10%',alignSelf:'flex-end',paddingRight:5}}>
+      <View style={{height:'10%',alignSelf:'flex-end',paddingRight:5}}>
 <TouchableOpacity onPress={()=>this.closeInformation()}>
-<Icon name='close' size={22} color={'#6A737C'}/>
+<Icon name='times' size={20} color={'#F3606E'}/>
 </TouchableOpacity>
-        </View>
-        <View style={{height:'10%'}}>
-        <Text style={{fontSize:22, paddingHorizontal:5}}>{this.state.sendingInformation.nome}</Text>
-        </View>
-        <View style={{height:'80%',alignSelf:"center",justifyContent:"center"}}>
-        <TouchableOpacity onPress={()=> this.getCurrentLocation(this.state.sendingInformation.latitude,this.state.sendingInformation.longitude)}>
-            <Icon style={{alignSelf:"center"}} name='location-arrow' size={25}  color= "#4d6273"/>
-            <Text>Gerar rota</Text>
-          </TouchableOpacity>
-          </View>
-          
-          
       </View>
+      <View style={{height:'40%'}}>
+      <Text style={{fontSize:18, paddingHorizontal:5}}>{this.state.sendingInformation.nome}</Text>
+      </View>
+      <View style={{height:'60%',alignSelf:"center",justifyContent:"center", flexDirection:'row'}}>
+        <View style={{width:"50%"}} >
+        <TouchableOpacity onPress={()=> this.getCurrentLocation(this.state.sendingInformation.latitude,this.state.sendingInformation.longitude)}>
+          <Icon style={{alignSelf:"center"}} name='route' size={22}  color= "#4d6273"/>
+          <Text style={{textAlign:"center"}} >Gerar rota</Text>
+        </TouchableOpacity>
+
+        </View>
+        <View style={{width:"50%"}} >
+        <TouchableOpacity onPress={()=> this.props.navigation.navigate("Detalhes", {
+                  nome: this.state.sendingInformation.nome
+                })}>
+          <Icon style={{alignSelf:"center"}} name='ellipsis-h' size={22}  color= "#4d6273"/>
+          <Text style={{textAlign:"center"}} >Mais</Text>
+        </TouchableOpacity>
+          
+        </View>
+          </View>
+
+
+              </View>
+
+
+          
+         
   </View>
   </View>
           ):null}
-           </View>
-          
         </View>
       </DismissKeyboard>
     );

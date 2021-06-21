@@ -1,8 +1,8 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import React, { Component } from 'react';
-import mapa from '../mapa'
-import Perfil from '../Perfil';
-import Evento from '../Evento';
+import mapa from '../screens/notAuthenticated/mapa'
+import Perfil from '../screens/notAuthenticated/Perfil';
+import Evento from '../screens/notAuthenticated/Evento';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Text from 'react-native';
 const Tab = createBottomTabNavigator();
@@ -10,7 +10,7 @@ const Tab = createBottomTabNavigator();
 function BottomNavigation() {
   return (
     <Tab.Navigator tabBarOptions={{
-      inactiveTintColor: '#444950',
+      inactiveTintColor: '#6E6E6E',
       activeTintColor: '#597291',
       labelStyle: {
         fontSize: 12,

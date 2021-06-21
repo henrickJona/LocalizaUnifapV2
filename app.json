@@ -1,14 +1,19 @@
 {
   "expo": {
-    "name": "localiaUnifap",
+    "name": "localizaUnifap",
     "icon": "./assets/icon.png",
-    "version": "1.0.0",
+    
+    "version": "6.0.0",
     "slug": "find",
     "ios": {
       "bundleIdentifier": "com.unifap.localizaunifap"
     },
     "android": {
-      "package": "com.unifap.localizaunifap"
+      "package": "com.unifap.localizaunifap",
+      "permissions":["ACCESS_COARSE_LOCATION","ACCESS_FINE_LOCATION"],
+      "config":{"googleMaps":{"apiKey":"AIzaSyCaDFX9c9F8STXJsvzhXx239iq0DGzIy7c"}},
+      "versionCode": 6
     }
+
   }
 }
